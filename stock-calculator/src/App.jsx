@@ -82,7 +82,9 @@ export default function App() {
           Remove row
         </button>
       </div>
-      <div className="container"></div>
+      <div className="container">
+        
+      </div>
     </>
   );
 }
