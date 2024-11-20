@@ -60,6 +60,8 @@ app.get("/api/stock/:ticker", async (req, res) => {
       .json({ error: error.message || "Failed to fetch stock data" });
   }
 });
+
+
 app.get('/api/stock/:ticker/:date', async (req, res) => {
   const { ticker, date } = req.params;
 

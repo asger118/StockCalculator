@@ -1,13 +1,19 @@
 import React, { useState } from "react";
 import "./styles.css";
+import {
+  calculateTotalProfit,
+  calculateTotalInvested,
+  calculateTotalProfitPercentage,
+  fetchPriceData,
+} from "./functions.js";
 
 export default function App() {
   const [rows, setRows] = useState([{ ticker: "", quantity: "", date: "" }]);
   const [prices, setPrices] = useState([]); // To store the fetched prices
+  const [portfolio, setPortfolio] = useState([]);
 
-  const addRow = () => {
-    setRows([...rows, { ticker: "", quantity: "", date: "" }]);
-  };
+  // Get today's date in the format yyyy-mm-dd
+  const today = new Date().toISOString().split("T")[0];
 
   const removeRow = () => {
     if (rows.length > 1) {
@@ -17,56 +23,24 @@ export default function App() {
     }
   };
 
+  const addRow = () => {
+    setRows([...rows, { ticker: "", quantity: "", date: "" }]);
+  };
+
+  const handleFetchPriceData = async () => {
+    try {
+      const fetchedPrices = await fetchPriceData(rows);
+      setPrices(fetchedPrices); // Store the fetched prices in state
+    } catch (error) {
+      alert(error.message); // Handle any errors
+    }
+  };
+
   const handleInputChange = (index, field, value) => {
     const updatedRows = [...rows];
     updatedRows[index][field] = value;
     setRows(updatedRows);
   };
-
-  const fetchPriceData = async () => {
-    try {
-      const fetchedPrices = await Promise.all(
-        rows.map(async (row) => {
-          if (!row.ticker || !row.date) {
-            throw new Error("Ticker and date must be filled out.");
-          }
-
-          const response = await fetch(
-            `http://localhost:3000/api/stock/${row.ticker}/${row.date}`
-          );
-
-          if (!response.ok) {
-            throw new Error(`Failed to fetch data for ${row.ticker}`);
-          }
-
-          const data = await response.json();
-          const profit = (data.currentPrice - data.priceOnDate) * row.quantity;
-          const percentageProfit =
-            (profit / (data.priceOnDate * row.quantity)) * 100;
-
-          return {
-            ticker: row.ticker,
-            date: row.date,
-            priceOnDate: data.priceOnDate,
-            currentPrice: data.currentPrice,
-            profit: profit,
-            percentageProfit: percentageProfit,
-            currency: data.currency,
-            quantity: row.quantity,
-          };
-        })
-      );
-
-      setPrices(fetchedPrices); // Store the fetched prices in state
-      console.log(fetchedPrices); // Log the prices for debugging
-    } catch (error) {
-      console.error("Error fetching stock prices:", error);
-      alert(error.message);
-    }
-  };
-
-  // Get today's date in the format yyyy-mm-dd
-  const today = new Date().toISOString().split("T")[0];
 
   return (
     <>
@@ -124,7 +98,7 @@ export default function App() {
           <div className="button-container">
             <button
               onClick={addRow}
-              style={{ backgroundColor: "#405cf5", marginRight: "15px" }}
+              style={{ backgroundColor: "#28a745", marginRight: "15px" }}
             >
               Add row
             </button>
@@ -132,8 +106,8 @@ export default function App() {
               Remove row
             </button>
             <button
-              onClick={fetchPriceData}
-              style={{ backgroundColor: "#28a745", marginLeft: "15px" }}
+              onClick={handleFetchPriceData}
+              style={{ backgroundColor: "#405cf5", marginLeft: "15px" }}
             >
               Get Prices
             </button>
@@ -152,7 +126,11 @@ export default function App() {
                 <>
                   {prices.map((price, index) => (
                     <tr key={index}>
-                      <td>
+                      <td
+                        style={{
+                          color: price.profit < 0 ? "#e62144" : "#28a745",
+                        }}
+                      >
                         {/* Display individual profit for each stock */}
                         {price.profit.toFixed(2)} /{" "}
                         {price.percentageProfit.toFixed(2)}%
@@ -161,35 +139,31 @@ export default function App() {
                     </tr>
                   ))}
                   <tr>
-                    <td>
-                      {
-                        // Calculate total profit and total invested once
-                        (() => {
-                          const totalProfit = prices.reduce(
-                            (total, price) => total + price.profit,
-                            0
-                          );
-                          const totalInvested = prices.reduce(
-                            (total, price) =>
-                              total + price.priceOnDate * price.quantity,
-                            0
+                    <td
+                      style={{
+                        color:
+                          calculateTotalProfit(prices) < 0
+                            ? "#e62144"
+                            : "#28a745",
+                      }}
+                    >
+                      {(() => {
+                        const totalProfit = calculateTotalProfit(prices);
+                        const totalInvested = calculateTotalInvested(prices);
+                        const totalProfitPercentage =
+                          calculateTotalProfitPercentage(
+                            totalProfit,
+                            totalInvested
                           );
 
-                          // Calculate profit percentage once
-                          const totalProfitPercentage =
-                            totalInvested > 0
-                              ? (totalProfit / totalInvested) * 100
-                              : 0;
-
-                          // Return total profit and percentage profit
-                          return (
-                            <>
-                              {totalProfit.toFixed(2)} /{" "}
-                              {totalProfitPercentage.toFixed(2)}%
-                            </>
-                          );
-                        })()
-                      }
+                        // Return total profit and percentage profit
+                        return (
+                          <>
+                            {totalProfit.toFixed(2)} /{" "}
+                            {totalProfitPercentage.toFixed(2)}%
+                          </>
+                        );
+                      })()}
                     </td>
                     <td></td> {/* Placeholder for the second column */}
                   </tr>
@@ -198,6 +172,45 @@ export default function App() {
             </tbody>
           </table>
         </div>
+      </div>
+      <div className="bottom-container">
+        <h3>Portfolio</h3>
+        <table>
+          <thead>
+            <tr>
+              <td>Stock</td>
+              <td>Ticker</td>
+              <td>Quantity</td>
+              <td>Total</td>
+              <td>Currency</td>
+            </tr>
+          </thead>
+          <tbody>
+            {portfolio.map((stock, index) => (
+              <tr key={index}>
+                <td>{stock.shortName}</td>
+                <td>{stock.symbol}</td>
+                <td>{stock.quantity}</td>
+                <td>{stock.total}</td>
+                <td>{stock.currency}</td>
+                <td
+                  style={{
+                    color: stock.change < 0 ? "red" : "green",
+                  }}
+                >
+                  {stock.change.toFixed(2)}
+                </td>
+                <td
+                  style={{
+                    color: stock.percentChange < 0 ? "red" : "green",
+                  }}
+                >
+                  {stock.percentChange.toFixed(2)}%
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </>
   );
