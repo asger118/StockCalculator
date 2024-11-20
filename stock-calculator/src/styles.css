@@ -18,6 +18,10 @@ body {
   --color4: #0c969c;
   --color5: #6ba3be;
   --color6: #274d60;
+  --green: #28a745;
+  --red: #e62144;
+  --blue: #405cf5;
+  --white: #ffffff;
 }
 
 .container {
@@ -34,7 +38,7 @@ body {
 }
 
 .bottom-container h3 {
-  color: #ffffff;
+  color: var(--white);
 }
 
 .bottom-container table {
@@ -50,7 +54,7 @@ body {
 
 .bottom-container thead tr {
   background-color: var(--color4);
-  color: #ffffff;
+  color: var(--white);
   text-align: left;
   font-weight: bold;
   user-select: none;
@@ -108,7 +112,7 @@ body {
 
 .left-box thead tr {
   background-color: var(--color4);
-  color: #ffffff;
+  color: var(--white);
   text-align: left;
   font-weight: bold;
   user-select: none;
@@ -118,22 +122,22 @@ body {
 .right-box thead tr {
   background-color: var(--color4);
   font-weight: bold;
-  color: #ffffff;
+  color: var(--white);
 }
 
 .left-box tbody tr {
   border-bottom: 1px solid #dddddd;
-  background-color: white;
+  background-color: var(--white);
 }
 
 .bottom-container tbody tr {
   border-bottom: 1px solid #dddddd;
-  background-color: white;
+  background-color: var(--white);
 }
 
 .right-box tbody tr {
   border-bottom: 1px solid #dddddd;
-  background-color: white;
+  background-color: var(--white);
 }
 
 .left-box tbody tr:nth-of-type(even) {
@@ -208,6 +212,7 @@ input[type="number"] {
   backface-visibility: hidden;
   border-radius: 6px;
   border-width: 0;
+  color: var(--white);
   box-shadow: rgba(50, 50, 93, 0.1) 0 0 0 1px inset,
     rgba(50, 50, 93, 0.1) 0 2px 5px 0, rgba(0, 0, 0, 0.07) 0 1px 1px 0;
   box-sizing: border-box;

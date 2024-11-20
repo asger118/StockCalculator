@@ -27,15 +27,6 @@ export default function App() {
     setRows([...rows, { ticker: "", quantity: "", date: "" }]);
   };
 
-  const handleFetchPriceData = async () => {
-    try {
-      const fetchedPrices = await fetchPriceData(rows);
-      setPrices(fetchedPrices); // Store the fetched prices in state
-    } catch (error) {
-      alert(error.message); // Handle any errors
-    }
-  };
-
   const handleInputChange = (index, field, value) => {
     const updatedRows = [...rows];
     updatedRows[index][field] = value;
@@ -98,16 +89,19 @@ export default function App() {
           <div className="button-container">
             <button
               onClick={addRow}
-              style={{ backgroundColor: "#28a745", marginRight: "15px" }}
+              style={{ backgroundColor: "#var(--green)", marginRight: "15px" }}
             >
               Add row
             </button>
-            <button onClick={removeRow} style={{ backgroundColor: "#e62144" }}>
+            <button
+              onClick={removeRow}
+              style={{ backgroundColor: "var(--red)" }}
+            >
               Remove row
             </button>
             <button
-              onClick={handleFetchPriceData}
-              style={{ backgroundColor: "#405cf5", marginLeft: "15px" }}
+              onClick={() => fetchPriceData(rows, setPrices, setPortfolio)}
+              style={{ backgroundColor: "var(--blue)", marginLeft: "15px" }}
             >
               Get Prices
             </button>
@@ -128,7 +122,8 @@ export default function App() {
                     <tr key={index}>
                       <td
                         style={{
-                          color: price.profit < 0 ? "#e62144" : "#28a745",
+                          color:
+                            price.profit < 0 ? "var(--red)" : "var(--green)",
                         }}
                       >
                         {/* Display individual profit for each stock */}
@@ -143,8 +138,8 @@ export default function App() {
                       style={{
                         color:
                           calculateTotalProfit(prices) < 0
-                            ? "#e62144"
-                            : "#28a745",
+                            ? "var(--red)"
+                            : "var(--green)",
                       }}
                     >
                       {(() => {
@@ -178,11 +173,13 @@ export default function App() {
         <table>
           <thead>
             <tr>
-              <td>Stock</td>
+              <td>Company</td>
               <td>Ticker</td>
               <td>Quantity</td>
               <td>Total</td>
               <td>Currency</td>
+              <td>Close price</td>
+              <td colSpan={2}>Change</td>
             </tr>
           </thead>
           <tbody>
@@ -193,16 +190,18 @@ export default function App() {
                 <td>{stock.quantity}</td>
                 <td>{stock.total}</td>
                 <td>{stock.currency}</td>
+                <td>{stock.price}</td>
                 <td
                   style={{
-                    color: stock.change < 0 ? "red" : "green",
+                    color: stock.change < 0 ? "var(--red)" : "var(--green)",
                   }}
                 >
                   {stock.change.toFixed(2)}
                 </td>
                 <td
                   style={{
-                    color: stock.percentChange < 0 ? "red" : "green",
+                    color:
+                      stock.percentChange < 0 ? "var(--red)" : "var(--green)",
                   }}
                 >
                   {stock.percentChange.toFixed(2)}%
