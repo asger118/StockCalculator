@@ -65,6 +65,9 @@ export default function App() {
     }
   };
 
+  // Get today's date in the format yyyy-mm-dd
+  const today = new Date().toISOString().split("T")[0];
+
   return (
     <>
       <div className="header">
@@ -107,6 +110,7 @@ export default function App() {
                   <td>
                     <input
                       type="date"
+                      max={today}
                       value={row.date}
                       onChange={(e) =>
                         handleInputChange(index, "date", e.target.value)
