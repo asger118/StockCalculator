@@ -50,7 +50,7 @@ export const fetchPriceData = async (rows, setPrices, setPortfolio) => {
         );
 
         setPrices(fetchedPrices);
-
+        
         // Fetch portfolio data
         const portfolioData = await Promise.all(
             rows.map(async (row) => {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./styles.css";
 import {
   calculateTotalProfit,
@@ -6,6 +6,8 @@ import {
   calculateTotalProfitPercentage,
   fetchPriceData,
 } from "./functions.js";
+import io from "socket.io-client";
+const socket = io("http://localhost:5173");
 
 export default function App() {
   const [rows, setRows] = useState([{ ticker: "", quantity: "", date: "" }]);
@@ -14,6 +16,28 @@ export default function App() {
 
   // Get today's date in the format yyyy-mm-dd
   const today = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    socket.on("stockAdded", (newStock) => {});
+
+    socket.on("priceUpdated", (updatedPriceData) => {});
+
+    return () => {
+      socket.off("stockAdded");
+      socket.off("priceUpdated");
+    };
+  }, []);
+
+  // Automatically trigger the WebSocket when the row is filled out
+  useEffect(() => {
+    // Loop through each row and check if all fields are filled
+    rows.forEach((row, index) => {
+      if (row.ticker && row.quantity && row.date) {
+        // Emit event to the server with the stock data
+        socket.emit("calculateProfit", row); // Send stock data to the backend for profit calculation
+      }
+    });
+  }, [rows]); // This effect will run every time `rows` state is updated
 
   const removeRow = () => {
     if (rows.length > 1) {
@@ -89,7 +113,7 @@ export default function App() {
           <div className="button-container">
             <button
               onClick={addRow}
-              style={{ backgroundColor: "#var(--green)", marginRight: "15px" }}
+              style={{ backgroundColor: "var(--green)", marginRight: "15px" }}
             >
               Add row
             </button>

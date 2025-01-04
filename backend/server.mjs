@@ -2,7 +2,9 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import axios from "axios";
+import http from "http";
 import { fileURLToPath } from "url";
+import { addStock, getAllStock, getStockByTicker, updatePrice, deleteStockByTicker } from "./database/database.mjs"
 
 // Create __dirname for ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -134,8 +136,6 @@ app.get('/api/stock/:ticker/:date', async (req, res) => {
       .json({ error: error.message || 'Failed to fetch stock data' });
   }
 });
-
-
 
 // Start the server
 app.listen(PORT, () => {
